@@ -1,6 +1,8 @@
 package com.example.notes.domain
 
-class GetNoteUseCase(val repository: NotesRepository) {
+import javax.inject.Inject
+
+class GetNoteUseCase @Inject constructor(val repository: NotesRepository) {
     suspend operator fun invoke(id: Int):Note{
         return repository.getNote(id)
     }

@@ -43,8 +43,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.notes.R
+import com.example.notes.domain.ContentItem
 import com.example.notes.domain.Note
 import com.example.notes.presentation.ui.theme.OtherNotesColors
 import com.example.notes.presentation.ui.theme.PinnedNotesColors
@@ -56,10 +58,7 @@ import com.example.notes.utils.DateFormatter
 @Composable
 fun NotesScreen(
     modifier: Modifier = Modifier,
-    context: Context = LocalContext.current.applicationContext,
-    viewModel: NotesViewModel = viewModel{
-        NotesViewModel(context)
-    },
+    viewModel: NotesViewModel = hiltViewModel(),
     onFABClick: () -> Unit,
     onNoteClick: (Note) -> Unit
 ) {
@@ -154,6 +153,7 @@ fun NotesScreen(
                 key = { it.id }
             ) {
                 val color = OtherNotesColors[it.id % OtherNotesColors.size]
+                Log.d("NotesViewModel", it.toString())
                 NoteCard(
                     note = it,
                     onLongClick = { viewModel.processCommand(NotesCommand.SwitchedPinnedStatus(it.id)) },
@@ -207,14 +207,20 @@ fun NoteCard(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.height(24.dp))
-        Text(
-            text = note.content,
-            fontSize = 14.sp,
-            maxLines = 3,
-            overflow = TextOverflow.Ellipsis,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        note.content
+            .filterIsInstance<ContentItem.ContentItemText>()
+            .joinToString("\n"){it.text}
+                .let {
+            Text(
+                text = it,
+                fontSize = 14.sp,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
     }
 }
 
@@ -266,7 +272,7 @@ fun SearchBar(
         value = query,
         onValueChange = {
             Log.d("NotesScreen", "recomposition")
-            onQueryChange.invoke(it)
+            onQueryChange(it)
         },
         placeholder = {
             Text(

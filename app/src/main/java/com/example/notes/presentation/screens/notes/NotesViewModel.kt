@@ -9,8 +9,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.notes.data.NotesRepositoryIml
 import com.example.notes.domain.GetAllNotesUseCase
 import com.example.notes.domain.Note
+import com.example.notes.domain.NotesRepository
 import com.example.notes.domain.SearchNotesUseCase
 import com.example.notes.domain.SwitchPinnedStatusUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,12 +21,18 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class NotesViewModel(context: Context) : ViewModel() {
-    private val repository = NotesRepositoryIml.getInstance(context)
-    private val getAllNotesUseCase = GetAllNotesUseCase(repository)
-    private val searchNotesUseCase = SearchNotesUseCase(repository)
-    private val switchPinnedStatusUseCase = SwitchPinnedStatusUseCase(repository)
+
+@HiltViewModel
+class NotesViewModel @Inject constructor(
+    private val getAllNotesUseCase : GetAllNotesUseCase,
+    private val searchNotesUseCase : SearchNotesUseCase,
+    private val switchPinnedStatusUseCase : SwitchPinnedStatusUseCase,
+) : ViewModel() {
+
+
+
 
     private val query = MutableStateFlow("")
 
@@ -36,7 +44,8 @@ class NotesViewModel(context: Context) : ViewModel() {
     fun processCommand(notesCommand: NotesCommand) {
         when (notesCommand) {
             is NotesCommand.InputSearchQuery -> {
-                query.update { notesCommand.query.trim() }
+                val new = notesCommand.query
+                query.update { new }
                 Log.d("NotesViewModel", notesCommand.query)
             }
 
@@ -49,17 +58,22 @@ class NotesViewModel(context: Context) : ViewModel() {
     }
 
     init {
-        query.flatMapLatest {
-            if (it.isBlank()) {
-                getAllNotesUseCase()
-            } else searchNotesUseCase(it)
-        }
+        query
+            .onEach { s ->
+                _state.update { it.copy(query = s) }
+            }
+            .flatMapLatest {
+                if (it.isBlank()) {
+                    getAllNotesUseCase()
+                } else searchNotesUseCase(it)
+            }
             .onEach { currentList ->
+                Log.d("NotesViewModel", currentList.joinToString(", "))
                 val pinnedNotes = currentList.filter {
-                    it.isPinned == true
+                    it.isPinned
                 }
                 val otherNotes = currentList.filter {
-                    it.isPinned == false
+                    !it.isPinned
                 }
                 _state.update {
                     it.copy(pinnedNotes = pinnedNotes, unpinnedNotes = otherNotes)

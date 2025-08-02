@@ -3,11 +3,13 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("com.google.devtools.ksp")
     alias(libs.plugins.kotlin.compose)
+    id("com.google.dagger.hilt.android")
+    kotlin("plugin.serialization") version "2.2.0"
 }
 
 android {
     namespace = "com.example.notes"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.notes"
@@ -41,8 +43,13 @@ android {
 }
 
 dependencies {
-
-
+    implementation("io.coil-kt.coil3:coil-compose:3.3.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+    implementation(libs.kotlinx.serialization.json)
+    implementation("com.google.dagger:hilt-android:2.57")
+    ksp("com.google.dagger:hilt-android-compiler:2.57")
+    implementation("com.google.code.gson:gson:2.13.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation(libs.androidx.room.runtime)
     ksp("androidx.room:room-compiler:2.7.2")
     implementation(libs.androidx.room.ktx)

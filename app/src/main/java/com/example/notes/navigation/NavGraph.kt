@@ -55,9 +55,7 @@ sealed class Screen(val route: String){
         fun createRoute(id: Int): String{
             return "edit_note/$id"
         }
-        fun getNoteId(args: Bundle?) : Int{
-            return args?.getString("note_id")?.toInt() ?: 0
-        }
+
 
     }
 }

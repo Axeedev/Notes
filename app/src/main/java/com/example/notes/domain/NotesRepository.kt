@@ -12,7 +12,12 @@ interface NotesRepository {
 
     suspend fun editNote(note: Note)
 
-    suspend fun addNote(title : String, description: String, isPinned: Boolean, updatedAt: Long)
+    suspend fun addNote(
+        title: String,
+        description: List<ContentItem>,
+        isPinned: Boolean,
+        updatedAt: Long
+    )
 
     suspend fun switchPinnedStatus(id: Int)
 

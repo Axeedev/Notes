@@ -27,7 +27,7 @@ interface NotesDao {
     @Update
     suspend fun edit(noteDbModel: NoteDbModel)
 
-    @Query("SELECT * FROM NOTES WHERE title = '%' || :query || '%' OR title = '%'||:query||'%'")
+    @Query("SELECT * FROM NOTES WHERE title LIKE '%' || :query || '%' OR content = '%'||:query||'%'")
     fun searchNotes(query: String): Flow<List<NoteDbModel>>
 
     @Query("UPDATE NOTES SET isPinned = NOT isPinned where id == :id")
