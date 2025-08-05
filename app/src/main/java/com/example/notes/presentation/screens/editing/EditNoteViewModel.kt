@@ -45,9 +45,12 @@ class EditNoteViewModel @AssistedInject constructor(
             EditNoteCommand.Save -> {
                 viewModelScope.launch {
                     _state.update { prev ->
-                        if (_state.value is EditNoteState.Editing) {
-                            val note = (_state.value as EditNoteState.Editing).note
-                            editNoteUseCase.invoke(note)
+                        if (prev is EditNoteState.Editing) {
+                            val note = prev.note
+                            val content = note.content.filter {
+                                it !is ContentItem.ContentItemText || it.text.isNotBlank()
+                            }
+                            editNoteUseCase.invoke(note.copy(content = content))
                             EditNoteState.Finished
                         } else {
                             prev
